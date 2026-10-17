@@ -5,6 +5,9 @@ on:
     branches: [ "**" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,23 +22,44 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
-
-    - name: Build Android APK
+    - name: Install Gradle & Build APK
       run: |
-        cd android
-        chmod +x gradlew || true
-        # If gradlew wrapper is present use it, otherwise use gradle or generate wrapper
-        if [ -f "./gradlew" ]; then
-          ./gradlew assembleDebug --stacktrace
-        else
-          gradle assembleDebug --stacktrace
+        # Auto-detect folder location
+        if [ -d "android" ]; then
+          cd android
         fi
+
+        # Download and install Gradle 8.10.2 directly (foolproof on Ubuntu runners)
+        echo "Installing Gradle 8.10.2..."
+        curl -sLo /tmp/gradle.zip https://services.gradle.org/distributions/gradle-8.10.2-bin.zip
+        sudo unzip -q -o /tmp/gradle.zip -d /opt
+        export PATH="/opt/gradle-8.10.2/bin:$PATH"
+
+        # Generate standard wrapper script if missing
+        gradle wrapper --gradle-version 8.10.2
+        chmod +x gradlew
+
+        echo "Compiling Android Debug APK..."
+        ./gradlew assembleDebug --no-daemon --stacktrace
 
     - name: Upload Debug APK Artifact
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: StarredDriveSync-debug.apk
-        path: "android/app/build/outputs/apk/debug/*.apk"
-        retention-days: 14
+        path: "**/build/outputs/apk/debug/*.apk"
+        retention-days: 30
+
+    - name: Publish to GitHub Releases
+      uses: softprops/action-gh-release@v2
+      if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      with:
+        tag_name: v1.0.0-apk
+        name: "Starred Drive Sync APK v1.0.0"
+        body: |
+          ### Starred RAW Drive Sync Android App (Pixel 7 Pro)
+          Direct APK download compiled automatically by GitHub Actions.
+          - 24/7 MediaStore ContentObserver for Google Photos favorites
+          - Uncompressed RAW DNG / full JPEG streaming to Google Drive
+        files: "**/build/outputs/apk/debug/*.apk"
+      continue-on-error: true
