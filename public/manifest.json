@@ -1,0 +1,17 @@
+{
+  "name": "MediaStore Drive RAW Favorites Sync",
+  "short_name": "DriveSync",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#0f172a",
+  "description": "Sync Google Photos favorites directly from Android MediaStore to Google Drive v3, preserving original filenames and EXIF.",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

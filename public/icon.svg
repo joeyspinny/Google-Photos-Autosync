@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#bg)"/>
+  <rect x="24" y="24" width="464" height="464" rx="108" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="4"/>
+  
+  <!-- Cloud & Drive sync aesthetic -->
+  <path d="M160 350 L352 350 A64 64 0 0 0 352 222 A96 96 0 0 0 168 184 A72 72 0 0 0 160 350 Z" fill="none" stroke="url(#accent)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Heart Favorite Badge -->
+  <path d="M256 220 C256 200, 280 180, 305 200 C330 220, 256 280, 256 280 C256 280, 182 220, 207 200 C232 180, 256 200, 256 220 Z" fill="#ec4899" />
+  
+  <!-- Arrow sync upward -->
+  <path d="M256 380 L256 290 M230 316 L256 290 L282 316" fill="none" stroke="#38bdf8" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

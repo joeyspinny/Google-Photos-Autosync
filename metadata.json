@@ -1,0 +1,6 @@
+{
+  "name": "Android MediaStore Drive Sync - RAW Favorites Exporter",
+  "description": "High-fidelity Android tool and code generator to sync Google Photos favorites directly via ContentResolver MediaStore to Google Drive v3, preserving original filenames and EXIF data.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
