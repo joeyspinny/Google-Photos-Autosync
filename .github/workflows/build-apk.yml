@@ -85,10 +85,14 @@ jobs:
           echo '}' >> build.gradle.kts
         fi
 
-        # 4. Auto-fix packaging duplicates and SDK target if present in app/build.gradle.kts
+        # 4. Auto-fix packaging duplicates, SDK target, and dependencies if present in app/build.gradle.kts
         if [ -f "app/build.gradle.kts" ]; then
+          # Ensure compileSdk is 34 for runner compatibility
           sed -i 's/compileSdk = 35/compileSdk = 34/g' app/build.gradle.kts || true
           sed -i 's/targetSdk = 35/targetSdk = 34/g' app/build.gradle.kts || true
+
+          # Ensure valid google-api-services-drive Maven Central version
+          sed -i 's/v3-rev20240905-2.0.0/v3-rev20240914-2.0.0/g' app/build.gradle.kts || true
 
           if ! grep -q "META-INF/DEPENDENCIES" "app/build.gradle.kts"; then
             echo "Auto-patching packaging excludes into app/build.gradle.kts..."
