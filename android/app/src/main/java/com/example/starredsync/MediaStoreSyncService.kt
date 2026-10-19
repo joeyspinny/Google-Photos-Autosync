@@ -9,7 +9,7 @@ import android.provider.MediaStore
 import androidx.core.app.NotificationCompat
 import androidx.exifinterface.media.ExifInterface
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.json.gson.GsonFactory
@@ -82,7 +82,7 @@ class MediaStoreSyncService : Service() {
         val credential = GoogleAccountCredential.usingOAuth2(this, listOf(DriveScopes.DRIVE_FILE))
         credential.selectedAccount = account.account
         driveService = Drive.Builder(
-            AndroidHttp.newCompatibleTransport(),
+            NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
             credential
         ).setApplicationName("StarredPhotos-RAW-Sync").build()
