@@ -85,28 +85,55 @@ jobs:
           echo '}' >> build.gradle.kts
         fi
 
-        # 4. Auto-fix packaging duplicates, SDK target, and dependencies if present in app/build.gradle.kts
-        if [ -f "app/build.gradle.kts" ]; then
+        # 4. Auto-fix packaging duplicates, SDK target, and dependencies in build.gradle.kts
+        for gradle_file in $(find . -name "build.gradle.kts" 2>/dev/null); do
           # Ensure compileSdk is 34 for runner compatibility
-          sed -i 's/compileSdk = 35/compileSdk = 34/g' app/build.gradle.kts || true
-          sed -i 's/targetSdk = 35/targetSdk = 34/g' app/build.gradle.kts || true
+          sed -i 's/compileSdk = 35/compileSdk = 34/g' "$gradle_file" || true
+          sed -i 's/targetSdk = 35/targetSdk = 34/g' "$gradle_file" || true
 
           # Ensure valid google-api-services-drive Maven Central version
-          sed -i 's/v3-rev20240905-2.0.0/v3-rev20240914-2.0.0/g' app/build.gradle.kts || true
+          sed -i 's/v3-rev20240905-2.0.0/v3-rev20240914-2.0.0/g' "$gradle_file" || true
 
-          if ! grep -q "META-INF/DEPENDENCIES" "app/build.gradle.kts"; then
-            echo "Auto-patching packaging excludes into app/build.gradle.kts..."
-            sed -i '/kotlinOptions {/i \    packaging {\n        resources {\n            excludes += "/META-INF/{AL2.0,LGPL2.1}"\n            excludes += "META-INF/DEPENDENCIES"\n            excludes += "META-INF/LICENSE"\n            excludes += "META-INF/LICENSE.txt"\n            excludes += "META-INF/license.txt"\n            excludes += "META-INF/NOTICE"\n            excludes += "META-INF/NOTICE.txt"\n            excludes += "META-INF/notice.txt"\n            excludes += "META-INF/ASL2.0"\n            excludes += "META-INF/*.kotlin_module"\n        }\n    }\n' app/build.gradle.kts || true
+          if grep -q "com.android.application" "$gradle_file" && ! grep -q "META-INF/DEPENDENCIES" "$gradle_file"; then
+            echo "Auto-patching packaging excludes into $gradle_file..."
+            sed -i '/kotlinOptions {/i \    packaging {\n        resources {\n            excludes += "/META-INF/{AL2.0,LGPL2.1}"\n            excludes += "META-INF/DEPENDENCIES"\n            excludes += "META-INF/LICENSE"\n            excludes += "META-INF/LICENSE.txt"\n            excludes += "META-INF/license.txt"\n            excludes += "META-INF/NOTICE"\n            excludes += "META-INF/NOTICE.txt"\n            excludes += "META-INF/notice.txt"\n            excludes += "META-INF/ASL2.0"\n            excludes += "META-INF/*.kotlin_module"\n        }\n    }\n' "$gradle_file" || true
           fi
-        fi
+        done
 
-        # 5. Ensure wrapper exists and is executable
+        # 5. Auto-sanitize AndroidManifest.xml (remove deprecated package attribute and missing mipmap refs)
+        for manifest in $(find . -name "AndroidManifest.xml" 2>/dev/null); do
+          echo "Sanitizing $manifest..."
+          sed -i 's/package="com.example[^"]*"//g' "$manifest" || true
+          sed -i 's|@mipmap/ic_launcher_round|@android:drawable/ic_menu_camera|g' "$manifest" || true
+          sed -i 's|@mipmap/ic_launcher|@android:drawable/ic_menu_camera|g' "$manifest" || true
+          sed -i 's|@style/Theme.Material3.Dark.NoActionBar|@android:style/Theme.Material.NoActionBar|g' "$manifest" || true
+        done
+
+        # 6. Ensure fallback mipmap drawables & strings exist in any res folder so AAPT linking never fails
+        for res_parent in $(find . -type d -path "*/src/main" 2>/dev/null); do
+          echo "Setting up launcher resources in $res_parent/res..."
+          mkdir -p "$res_parent/res/mipmap-anydpi-v26"
+          mkdir -p "$res_parent/res/values"
+          echo '<?xml version="1.0" encoding="utf-8"?>' > "$res_parent/res/mipmap-anydpi-v26/ic_launcher.xml"
+          echo '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">' >> "$res_parent/res/mipmap-anydpi-v26/ic_launcher.xml"
+          echo '    <background android:drawable="@android:color/black"/>' >> "$res_parent/res/mipmap-anydpi-v26/ic_launcher.xml"
+          echo '    <foreground android:drawable="@android:drawable/ic_menu_camera"/>' >> "$res_parent/res/mipmap-anydpi-v26/ic_launcher.xml"
+          echo '</adaptive-icon>' >> "$res_parent/res/mipmap-anydpi-v26/ic_launcher.xml"
+
+          cp "$res_parent/res/mipmap-anydpi-v26/ic_launcher.xml" "$res_parent/res/mipmap-anydpi-v26/ic_launcher_round.xml" || true
+
+          if [ ! -f "$res_parent/res/values/strings.xml" ]; then
+            echo '<resources><string name="app_name">Starred RAW Sync</string></resources>' > "$res_parent/res/values/strings.xml"
+          fi
+        done
+
+        # 7. Ensure wrapper exists and is executable
         if [ ! -f "gradlew" ]; then
           gradle wrapper --gradle-version 8.10.2 || true
         fi
         [ -f "gradlew" ] && chmod +x gradlew || true
 
-        # 6. Execute Build
+        # 8. Execute Build
         echo "Building Android Debug APK..."
         if [ -f "gradlew" ]; then
           ./gradlew assembleDebug --no-daemon --stacktrace
