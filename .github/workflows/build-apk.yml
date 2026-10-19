@@ -127,13 +127,19 @@ jobs:
           fi
         done
 
-        # 7. Ensure wrapper exists and is executable
+        # 7. Auto-replace deprecated AndroidHttp with NetHttpTransport in Kotlin services
+        for kt_file in $(find . -name "*.kt" 2>/dev/null); do
+          sed -i 's/import com.google.api.client.extensions.android.http.AndroidHttp/import com.google.api.client.http.javanet.NetHttpTransport/g' "$kt_file" || true
+          sed -i 's/AndroidHttp.newCompatibleTransport()/NetHttpTransport()/g' "$kt_file" || true
+        done
+
+        # 8. Ensure wrapper exists and is executable
         if [ ! -f "gradlew" ]; then
           gradle wrapper --gradle-version 8.10.2 || true
         fi
         [ -f "gradlew" ] && chmod +x gradlew || true
 
-        # 8. Execute Build
+        # 9. Execute Build
         echo "Building Android Debug APK..."
         if [ -f "gradlew" ]; then
           ./gradlew assembleDebug --no-daemon --stacktrace

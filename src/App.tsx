@@ -31,7 +31,10 @@ import {
   customCloneServiceKt,
   customCloneDatabaseKt,
   customCloneManifestXml,
-  customCloneBuildGradleKt
+  customCloneBuildGradleKt,
+  customCloneRootBuildGradleKt,
+  customCloneSettingsGradleKt,
+  customCloneGradleWrapperProperties
 } from './data/customCloneCode';
 import { githubActionsWorkflowYaml } from './data/securityAudit';
 
@@ -46,6 +49,9 @@ export default function App() {
 
       // Full Custom Android App Clone (Catch-Up, Room DB, Drive Links, Background Daemon)
       const cloneFolder = zip.folder("CustomCloneApp");
+      cloneFolder?.file("settings.gradle.kts", customCloneSettingsGradleKt.trim());
+      cloneFolder?.file("build.gradle.kts", customCloneRootBuildGradleKt.trim());
+      cloneFolder?.folder("gradle/wrapper")?.file("gradle-wrapper.properties", customCloneGradleWrapperProperties.trim());
       const cloneSrc = cloneFolder?.folder("app/src/main/java/com/example/starredsync");
       cloneSrc?.file("MainActivity.kt", customCloneMainActivityKt.trim());
       cloneSrc?.file("MediaStoreSyncService.kt", customCloneServiceKt.trim());

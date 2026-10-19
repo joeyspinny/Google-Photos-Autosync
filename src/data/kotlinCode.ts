@@ -39,7 +39,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Scope
-import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.json.gson.GsonFactory
@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
         )
         credential.selectedAccount = account.account
         driveService = Drive.Builder(
-            AndroidHttp.newCompatibleTransport(),
+            NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
             credential
         ).setApplicationName("MediaStore-Drive-RAW-Sync").build()
@@ -594,8 +594,7 @@ fun queryMediaStoreFavorites(context: Context): List<MediaStorePhoto> {
 
 export const androidManifestXml = `<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="com.example.mediastoredrivesync">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Network permissions for Google Drive API v3 -->
     <uses-permission android:name="android.permission.INTERNET" />
@@ -613,12 +612,11 @@ export const androidManifestXml = `<?xml version="1.0" encoding="utf-8"?>
         android:maxSdkVersion="32" />
 
     <application
-        android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
-        android:label="Drive RAW Sync"
-        android:roundIcon="@mipmap/ic_launcher_round"
+        android:allowBackup="false"
+        android:icon="@android:drawable/ic_menu_camera"
+        android:label="Starred RAW Sync"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Material3.Dark.NoActionBar">
+        android:theme="@android:style/Theme.Material.NoActionBar">
 
         <activity
             android:name=".MainActivity"
@@ -677,7 +675,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     // Google Drive REST API v3 Client
-    implementation("com.google.apis:google-api-services-drive:v3-rev20240905-2.0.0")
+    implementation("com.google.apis:google-api-services-drive:v3-rev20240914-2.0.0")
     implementation("com.google.api-client:google-api-client-android:2.7.0")
     implementation("com.google.http-client:google-http-client-gson:1.45.0")
 

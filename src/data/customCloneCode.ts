@@ -529,7 +529,7 @@ import android.provider.MediaStore
 import androidx.core.app.NotificationCompat
 import androidx.exifinterface.media.ExifInterface
 import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.http.javanet.NetHttpTransport
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
 import com.google.api.client.http.InputStreamContent
 import com.google.api.client.json.gson.GsonFactory
@@ -601,7 +601,7 @@ class MediaStoreSyncService : Service() {
         val credential = GoogleAccountCredential.usingOAuth2(this, listOf(DriveScopes.DRIVE_FILE))
         credential.selectedAccount = account.account
         driveService = Drive.Builder(
-            AndroidHttp.newCompatibleTransport(),
+            NetHttpTransport(),
             GsonFactory.getDefaultInstance(),
             credential
         ).setApplicationName("StarredPhotos-RAW-Sync").build()
@@ -966,27 +966,87 @@ class SyncRepository(context: Context) {
 }
 `;
 
+export const customCloneRootBuildGradleKt = `plugins {
+    id("com.android.application") version "8.7.2" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false
+    id("com.google.devtools.ksp") version "2.0.21-1.0.27" apply false
+}
+`;
+
+export const customCloneSettingsGradleKt = `pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "StarredDriveSync"
+include(":app")
+`;
+
+export const customCloneGradleWrapperProperties = `distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\\://services.gradle.org/distributions/gradle-8.10.2-bin.zip
+networkTimeout=10000
+validateDistributionUrl=true
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+`;
+
 export const customCloneBuildGradleKt = `plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.ksp)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
 }
 
 android {
     namespace = "com.example.starredsync"
-    compileSdk = 35
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.starredsync"
         minSdk = 30
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
     }
 
     buildFeatures {
         compose = true
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
+            excludes += "META-INF/LICENSE"
+            excludes += "META-INF/LICENSE.txt"
+            excludes += "META-INF/license.txt"
+            excludes += "META-INF/NOTICE"
+            excludes += "META-INF/NOTICE.txt"
+            excludes += "META-INF/notice.txt"
+            excludes += "META-INF/ASL2.0"
+            excludes += "META-INF/*.kotlin_module"
+        }
     }
 }
 
@@ -1009,7 +1069,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-auth:21.2.0")
 
     // Google Drive REST API v3 Client
-    implementation("com.google.apis:google-api-services-drive:v3-rev20240905-2.0.0")
+    implementation("com.google.apis:google-api-services-drive:v3-rev20240914-2.0.0")
     implementation("com.google.api-client:google-api-client-android:2.7.0")
     implementation("com.google.http-client:google-http-client-gson:1.45.0")
 
@@ -1019,8 +1079,7 @@ dependencies {
 `;
 
 export const customCloneManifestXml = `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.starredsync">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -1038,7 +1097,8 @@ export const customCloneManifestXml = `<?xml version="1.0" encoding="utf-8"?>
     <application
         android:allowBackup="false"
         android:label="Starred RAW Sync"
-        android:theme="@style/Theme.Material3.Dark.NoActionBar">
+        android:icon="@android:drawable/ic_menu_camera"
+        android:theme="@android:style/Theme.Material.NoActionBar">
 
         <activity
             android:name=".MainActivity"
