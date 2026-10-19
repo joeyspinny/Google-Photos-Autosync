@@ -358,6 +358,10 @@ export const CloneDashboard: React.FC = () => {
       const zip = new JSZip();
 
       // Root Gradle & Settings
+      const gradleProperties = `android.useAndroidX=true
+android.nonTransitiveRClass=true
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8`;
+      zip.file("gradle.properties", gradleProperties);
       zip.file("settings.gradle.kts", customCloneSettingsGradleKt.trim());
       zip.file("build.gradle.kts", customCloneRootBuildGradleKt.trim());
       zip.folder("gradle/wrapper")?.file("gradle-wrapper.properties", customCloneGradleWrapperProperties.trim());
@@ -388,6 +392,7 @@ export const CloneDashboard: React.FC = () => {
 
       // Android subfolder structure (compatibility for android/ workspace)
       const androidFolder = zip.folder("android");
+      androidFolder?.file("gradle.properties", gradleProperties);
       androidFolder?.file("settings.gradle.kts", customCloneSettingsGradleKt.trim());
       androidFolder?.file("build.gradle.kts", customCloneRootBuildGradleKt.trim());
       androidFolder?.folder("gradle/wrapper")?.file("gradle-wrapper.properties", customCloneGradleWrapperProperties.trim());
@@ -585,7 +590,7 @@ export const CloneDashboard: React.FC = () => {
               <div className="text-emerald-400">compileSdk = 34 / targetSdk = 34</div>
               <div className="text-rose-400 line-through">- implementation("...drive:v3-rev20240905-2.0.0")</div>
               <div className="text-emerald-400">+ implementation("...drive:v3-rev20240914-2.0.0")</div>
-              <div className="text-emerald-400">+ packaging &#123; resources &#123; excludes += "META-INF/DEPENDENCIES" &#125; &#125;</div>
+              <div className="text-emerald-400">+ packaging &#123; resources &#123; excludes += listOf("META-INF/DEPENDENCIES", "META-INF/INDEX.LIST") &#125; &#125;</div>
             </div>
           </div>
         </div>

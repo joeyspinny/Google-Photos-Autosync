@@ -96,7 +96,11 @@ jobs:
 
           if grep -q "com.android.application" "$gradle_file" && ! grep -q "META-INF/DEPENDENCIES" "$gradle_file"; then
             echo "Auto-patching packaging excludes into $gradle_file..."
-            sed -i '/kotlinOptions {/i \    packaging {\n        resources {\n            excludes += "/META-INF/{AL2.0,LGPL2.1}"\n            excludes += "META-INF/DEPENDENCIES"\n            excludes += "META-INF/LICENSE"\n            excludes += "META-INF/LICENSE.txt"\n            excludes += "META-INF/license.txt"\n            excludes += "META-INF/NOTICE"\n            excludes += "META-INF/NOTICE.txt"\n            excludes += "META-INF/notice.txt"\n            excludes += "META-INF/ASL2.0"\n            excludes += "META-INF/*.kotlin_module"\n        }\n    }\n' "$gradle_file" || true
+            sed -i '/kotlinOptions {/i \    packaging {\n        resources {\n            excludes += "/META-INF/{AL2.0,LGPL2.1}"\n            excludes += "META-INF/DEPENDENCIES"\n            excludes += "META-INF/INDEX.LIST"\n            excludes += "META-INF/LICENSE"\n            excludes += "META-INF/LICENSE.txt"\n            excludes += "META-INF/license.txt"\n            excludes += "META-INF/NOTICE"\n            excludes += "META-INF/NOTICE.txt"\n            excludes += "META-INF/notice.txt"\n            excludes += "META-INF/ASL2.0"\n            excludes += "META-INF/*.kotlin_module"\n        }\n    }\n' "$gradle_file" || true
+          fi
+
+          if grep -q "META-INF/DEPENDENCIES" "$gradle_file" && ! grep -q "META-INF/INDEX.LIST" "$gradle_file"; then
+            sed -i '/excludes += "META-INF\/DEPENDENCIES"/a \            excludes += "META-INF/INDEX.LIST"' "$gradle_file" || true
           fi
         done
 
